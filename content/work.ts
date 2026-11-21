@@ -261,7 +261,8 @@ export const caseStudies: CaseStudy[] = [
   },
 ];
 
-export const alsoBuilt: { name: string; text: string; ledgerId: string; href?: string }[] = [
+// `resume: true` also lists the entry under "Open source" on /resume (and so in the PDF).
+export const alsoBuilt: { name: string; text: string; ledgerId: string; href?: string; resume?: boolean }[] = [
   {
     name: "Odoo token-exchange gateway",
     ledgerId: "p-oap-1",
@@ -282,12 +283,14 @@ export const alsoBuilt: { name: string; text: string; ledgerId: string; href?: s
   {
     name: "OpenDial",
     ledgerId: "p-od-1",
+    resume: true,
     text: "An open-source Linux service for the Microsoft Surface Dial: a radial tool menu, per-app profiles, haptics, a Qt 6 settings app, a CLI and a D-Bus API. C++, in beta.",
     href: "https://github.com/JoshShearer/opendial",
   },
   {
     name: "3DMouse Linux",
     ledgerId: "p-3dm-1",
+    resume: true,
     text: "An open-source Linux driver and settings app for 3Dconnexion 6-DOF devices, compatible with existing spacenavd / libspnav applications, with automatic per-app profiles. Rust, in alpha.",
     href: "https://github.com/JoshShearer/3dmouse-linux",
   },

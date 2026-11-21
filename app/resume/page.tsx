@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { period, roles } from "@/content/experience";
 import { education, site } from "@/content/site";
 import { skillGroups } from "@/content/skills";
-import { caseStudies } from "@/content/work";
+import { alsoBuilt, caseStudies } from "@/content/work";
 
 export const metadata: Metadata = {
   title: "Résumé",
@@ -18,6 +18,7 @@ function Heading({ children }: { children: React.ReactNode }) {
 // (scripts/resume-pdf.mjs), so the two cannot disagree.
 export default function ResumePage() {
   const projects = caseStudies.filter((c) => c.ledgerId.startsWith("proj-"));
+  const openSource = alsoBuilt.filter((p) => p.resume);
   return (
     <div className="mx-auto max-w-3xl px-6 py-16 sm:px-10 print:max-w-none print:p-0">
       <header className="flex flex-wrap items-end justify-between gap-6">
@@ -65,6 +66,23 @@ export default function ResumePage() {
           </ul>
         </section>
       ))}
+
+      {openSource.length > 0 && (
+        <>
+          <Heading>Open source</Heading>
+          {openSource.map((p) => (
+            <section key={p.ledgerId} className="mt-5 break-inside-avoid print:mt-2">
+              <h3 className="font-semibold">
+                {p.name}
+                {p.href && (
+                  <span className="font-normal text-pencil"> · {p.href.replace("https://", "")}</span>
+                )}
+              </h3>
+              <p className="mt-1 text-[0.95rem]">{p.text}</p>
+            </section>
+          ))}
+        </>
+      )}
 
       <Heading>Skills</Heading>
       <dl className="mt-4 space-y-2 text-[0.95rem]">
