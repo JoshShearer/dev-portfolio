@@ -11,7 +11,7 @@
   --ink: #14181d;
   --pencil: #5b6570;
   --rule: #cdd3cf;
-  --signal: #d9431f;
+  --signal: #c23a18;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -35,14 +35,15 @@
   --rule: #2a323a;
   --signal: #ff6a3d;
 }
-:root[data-theme="light"] {
+:root[data-theme="light"],
+[data-theme="light"] {
   color-scheme: light;
   --paper: #f3f4f1;
   --sheet: #fbfcfa;
   --ink: #14181d;
   --pencil: #5b6570;
   --rule: #cdd3cf;
-  --signal: #d9431f;
+  --signal: #c23a18;
 }
 
 @theme inline {
@@ -123,5 +124,166 @@ html {
   }
   @page {
     margin: 12mm;
+  }
+}
+
+/* Schematics (components/schematic). Hairlines in ink; signal only on what is lit or refused. */
+.sch {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.sch-node > * {
+  fill: var(--sheet);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.sch-node .sch-dot {
+  fill: var(--ink);
+}
+.sch-node.sch-lit > *:not(text) {
+  stroke: var(--signal);
+  stroke-width: 2.5;
+}
+.sch-node.sch-lit .sch-dot {
+  fill: var(--signal);
+}
+.sch-edge,
+.sch-arrow,
+.sch-refusal line,
+.sch-refusal path {
+  fill: none;
+  stroke: var(--pencil);
+  stroke-width: 1.25;
+  vector-effect: non-scaling-stroke;
+}
+.sch-edge--control {
+  stroke-dasharray: 5 5;
+}
+.sch-edge.sch-lit {
+  stroke: var(--signal);
+  stroke-width: 2;
+}
+.sch-refusal line,
+.sch-refusal path {
+  stroke: var(--signal);
+}
+.sch-refusal path {
+  stroke-width: 2;
+}
+.sch .sch-label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  fill: var(--pencil);
+  stroke: none;
+}
+.sch .sch-num {
+  fill: var(--ink);
+}
+.sch-refusal .sch-label {
+  fill: var(--signal);
+}
+/* On a phone the viewBox is scaled to about half size: names would be
+   unreadable, so "full" keeps only the numbers (the list beside the diagram
+   has the names) and "names" enlarges them. */
+@media (max-width: 640px) {
+  .sch .sch-label {
+    font-size: 24px;
+  }
+  .sch--full .sch-label--name {
+    display: none;
+  }
+}
+
+/* The box a schematic lives in. The SVG sets its size; the canvas overlays it. */
+.sch-box {
+  position: relative;
+  touch-action: pan-y;
+}
+.sch-box--panel {
+  aspect-ratio: 1 / 0.66;
+}
+.sch.sch--fit {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+}
+.sch {
+  transition: opacity 0.5s ease;
+}
+.sch--under {
+  opacity: 0;
+}
+.sch--swap {
+  animation: sch-in 0.35s ease both;
+}
+@keyframes sch-in {
+  from {
+    opacity: 0;
+  }
+}
+.sch-gl-canvas,
+.sch-gl-labels {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.sch-gl-canvas--on,
+.sch-gl-labels--on {
+  opacity: 1;
+}
+.sch-gl-labels {
+  pointer-events: none;
+  overflow: hidden;
+}
+.sch-gl-group {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.sch-gl-group--on {
+  opacity: 1;
+}
+.sch-gl-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--pencil);
+  will-change: transform;
+}
+.sch-gl-num {
+  color: var(--ink);
+  margin-right: 0.4em;
+}
+.sch-gl-labels--names .sch-gl-num,
+.sch-gl-labels--none {
+  display: none;
+}
+.sch-gl-label--refusal {
+  color: var(--signal);
+}
+@media (max-width: 640px) {
+  .sch-gl-labels--full .sch-gl-name,
+  .sch-gl-labels--full .sch-gl-label--refusal {
+    display: none;
+  }
+  .sch-gl-num {
+    margin-right: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sch,
+  .sch--swap {
+    transition: none;
+    animation: none;
   }
 }

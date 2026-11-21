@@ -5,6 +5,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "export",
   images: { unoptimized: true },
+  // The source is public anyway; maps make production errors readable.
+  productionBrowserSourceMaps: true,
   turbopack: {
     rules: {
       "*.css": {

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/chrome";
+import { SchematicFigure } from "@/components/schematic/schematic-figure";
+import { schematics } from "@/content/schematics";
 import { site } from "@/content/site";
 import { caseStudies, getCaseStudy } from "@/content/work";
 
@@ -16,7 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/work/[slug]">): P
     title: c.title,
     description: c.summary,
     alternates: { canonical: `/work/${c.slug}` },
-    openGraph: { type: "article", title: c.title, description: c.summary, url: `/work/${c.slug}` },
+    openGraph: { type: "article", title: c.title, description: c.summary, url: `/work/${c.slug}`, images: [`/og/${c.slug}.png`] },
   };
 }
 
@@ -86,6 +88,11 @@ export default async function CaseStudyPage({ params }: PageProps<"/work/[slug]"
       <Block label="The problem">
         <p className="text-lg">{c.problem}</p>
       </Block>
+
+      <section className="border-t border-rule py-12">
+        <h2 className="tag mb-8">The system</h2>
+        <SchematicFigure schematic={schematics[c.slug]} variant="case" />
+      </section>
 
       <Block label="What I built">
         <ul className="space-y-4">

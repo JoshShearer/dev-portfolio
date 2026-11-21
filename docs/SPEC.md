@@ -127,7 +127,7 @@ Tokens (starting point, to be tuned in the design pass):
 | `--ink` | `#14181D` | `#E6E9EC` | text |
 | `--pencil` | `#5B6570` | `#97A1AC` | secondary text, node labels |
 | `--rule` | `#CDD3CF` | `#2A323A` | hairlines, schematic traces |
-| `--signal` | `#D9431F` | `#FF6A3D` | live pulses, primary action, focus ring |
+| `--signal` | `#C23A18` | `#FF6A3D` | live pulses, primary action, focus ring |
 
 Theme follows the operating system, with a working toggle that persists.
 
@@ -139,57 +139,51 @@ Layout: a 12-column grid with wide margins. On desktop the schematic occupies th
 
 ### One data model, two renderers
 
-Each schematic is plain data:
+Each schematic is plain data (`content/schematics.ts`):
 
 ```ts
 type Schematic = {
   id: string;
+  title: string; // the diagram's accessible description
   nodes: {
     id: string;
     label: string;
     kind: "source" | "process" | "store" | "gate" | "human" | "sink";
-    pos: [number, number, number];
+    pos: [number, number, number]; // grid units; z lifts a node off the board
     note: string; // one sentence, shown in the DOM
   }[];
-  edges: { from: string; to: string; kind: "data" | "control" | "refused" }[];
+  edges: { from: string; to: string; kind: "data" | "control" }[];
+  refusals?: { from: string; dir: [number, number]; label: string }[];
 };
 ```
 
-- `<SchematicSvg>` renders it to static SVG at build time. This is what crawlers, no-JS visitors, reduced-motion users and weak devices get, and it is the poster the canvas fades in over, so there is no layout shift.
-- `<SchematicScene>` renders the same data in WebGL after the page is interactive.
+A refusal is a stub out of a node that ends in a cross: the place where the system says no.
 
-The node list is also rendered as a real HTML list next to the diagram. The canvas is `aria-hidden`; keyboard and screen-reader users use the list, and focusing a list item highlights its node.
+- `SchematicSvg` renders it to static SVG at build time. This is what crawlers, no-JS visitors, reduced-motion users and devices without a GPU get, and it is the poster the canvas fades in over, so there is no layout shift.
+- `GlScene` renders the same data in WebGL after the page has loaded.
+
+On case studies the node list is rendered as real HTML under the diagram. The canvas is `aria-hidden`; keyboard and screen-reader users use the list, and focusing a list item highlights its node.
 
 ### Scenes
 
-- **Hero: the control loop.** Measure, decide, ship, observe, with a feedback trace closing the loop. Pulses circulate slowly. The pointer tilts the board a few degrees.
-- **Home scroll.** One continuous board. As each work section enters, the camera travels along a trace to that project's schematic. Driven by scroll position, with no scroll hijacking.
-- **Case study.** The project's schematic, interactive: hover or focus a node to highlight its edges and show its note; drag to orbit within limits.
+- **Hero: the control loop.** Goal, decide, build, ship, measure, with a feedback trace closing the loop. Pulses circulate. The pointer tilts the board a few degrees.
+- **Home work list.** On wide screens a sticky panel beside the list shows the schematic of the card nearest the middle of the viewport. In WebGL the five schematics sit side by side and the camera glides between them. There is no scroll hijacking. On narrow screens each card carries its own static diagram.
+- **Case study.** The project's schematic, interactive: hover or focus a node to highlight it and its edges; drag to turn the board within limits.
 
-The Job Radar schematic is the signature moment and is specified here; the other four are authored in phase 2.
-
-```
-boards (source) -> sweep -> normalize -> rank (deterministic)
-rank -> gateway (gate: budget reserved before each call) -> model
-model -> verifier (gate: allowlist) -> materials -> human -> employer (sink)
-verifier -x  refused sentences stop here
-fill -x      never reaches submit; only the human edge reaches the employer
-```
-
-Some pulses reach the verifier and stop. Nothing reaches the employer except through the human node. That one animation explains the project.
+On the Job Radar schematic, pulses die at three crosses: the budget gateway (over budget), the verifier (untraceable sentence) and the form filler (never submits). Nothing reaches the employer except through the human node.
 
 ### Implementation
 
-- React Three Fiber, with `three` imported by module path so unused parts are tree-shaken. No post-processing.
-- Nodes are one `InstancedMesh` per kind. Traces are one line geometry with a small shader that moves pulses by a time uniform. Target under 20 draw calls.
-- The 3D chunk loads by dynamic import after first paint, on idle, and only when the canvas is near the viewport.
-- Device pixel ratio clamped to 1.75. Rendering pauses when the canvas is off screen or the tab is hidden, and falls to on-demand frames when nothing is moving.
-- A frame-time monitor drops quality, then falls back to the SVG, if the device cannot hold 30 fps.
-- The SVG stays, and the canvas never loads, when: WebGL is unavailable, `prefers-reduced-motion` is set, or Save-Data is on.
+- Plain three.js in one class (`components/schematic/gl-scene.ts`), not React Three Fiber: the scene is small and imperative, and this keeps the 3D chunk to about 134 kB gzip. No post-processing.
+- Nodes are flat-shaded tokens with ink outlines; traces are lines; pulses are small spheres. Labels are HTML positioned over the canvas each frame, so text stays sharp and follows the theme.
+- The 3D chunk loads by dynamic import after the `load` event, on idle, and only when the figure is near the viewport.
+- Device pixel ratio is clamped to 1.75. Rendering stops when the canvas is off screen or the tab is hidden.
+- A frame-time monitor drops to 1x pixels, then falls back to the SVG, if the device cannot hold 30 fps.
+- The SVG stays, and three.js never loads, when: WebGL 2 is unavailable, the renderer is software (no GPU), `prefers-reduced-motion` is set, or Save-Data is on. `?gl=1` and `?gl=0` override this for testing.
 
 ## 8. Stack and architecture
 
-- **Next.js App Router, static export, TypeScript strict.** This is Josh's headline stack, it produces plain static HTML, and a canvas mounted in the root layout persists across page navigations. Astro would ship less JavaScript but would not demonstrate the stack the résumé leads with. Use current stable versions and confirm them at scaffold time.
+- **Next.js App Router, static export, TypeScript strict.** This is Josh's headline stack and it produces plain static HTML. Astro would ship less JavaScript but would not demonstrate the stack the résumé leads with. Use current stable versions and confirm them at scaffold time.
 - **Tailwind CSS** driven by the CSS variables in section 6. No component library.
 - **Typed `.ts` content files** for profile, experience, skills and case studies. Every case study has the same shape, and every claim carries its ledger id, which `check:claims` reads.
 - **No runtime backend, no Firebase SDK, no environment variables.**
@@ -200,9 +194,9 @@ Some pulses reach the verifier and stop. Nothing reaches the employer except thr
 ```
 app/                  layout, pages, metadata, sitemap, robots
 components/           UI
-components/schematic/ SchematicSvg, SchematicScene, shared layout math
+components/schematic/ schematic-svg, gl-scene, layout math, the figure and work-board wrappers
 content/              site.ts, experience.ts, skills.ts, work.ts, schematics/*.ts
-scripts/              check-claims, resume-pdf, og-images
+scripts/              check-claims, postbuild (résumé PDF and Open Graph images), screenshots
 public/               fonts, headshot, llms.txt
 ```
 
@@ -215,22 +209,25 @@ The site should show the practice it describes.
 - JSON-LD: `Person` and `WebSite` on home, `ProfilePage` on about content, `CreativeWork` or `SoftwareSourceCode` plus `BreadcrumbList` on case studies. Validated in CI.
 - Generated `sitemap.xml` with real `lastmod`, a correct `robots.txt`, and an `llms.txt` that lists the pages and summarizes each.
 - Semantic HTML with one `h1` per page.
-- One analytics tag (GA4), loaded on idle. Remove the second, mismatched tag ID.
+- Analytics: none yet. The live site carries no tag, and the two IDs in the old `dev` branch came from another project's template. Add one GA4 tag, loaded on idle, once Josh names the property.
 
 ## 10. Budgets
 
-| Measure | Budget |
-|---|---|
-| LCP, mobile, throttled 4G | under 1.8 s; the LCP element is hero text, never the canvas |
-| CLS | under 0.02 |
-| INP | under 200 ms |
-| JavaScript before the 3D chunk | 110 kB gzip or less |
-| 3D chunk, lazy | 200 kB gzip or less |
-| Home page transfer without 3D | 600 kB or less |
-| Frame rate | 60 fps on an integrated-GPU laptop; 30 fps floor before fallback |
-| Accessibility | WCAG 2.2 AA: contrast, visible focus, full keyboard path, reduced-motion respected |
+| Measure | Budget | Measured 2026-11-21 (Lighthouse mobile, local) |
+|---|---|---|
+| LCP, mobile, throttled 4G | under 1.8 s; the LCP element is hero text, never the canvas | 0.8 to 0.9 s |
+| CLS | under 0.02 | 0 |
+| Lighthouse performance | 95 or more | home 93 to 95, case study 92 to 94, résumé 96 |
+| Lighthouse accessibility, best practices, SEO | 100 | 100 on all three |
+| JavaScript before the 3D chunk | 110 kB gzip or less | about 175 kB; missed, see below |
+| 3D chunk, lazy | 200 kB gzip or less | 134 kB |
+| Page transfer without 3D | 600 kB or less | about 300 kB |
+| Frame rate | 60 fps on an integrated-GPU laptop; 30 fps floor before fallback | not yet measured on real hardware |
+| Accessibility | WCAG 2.2 AA: contrast, visible focus, full keyboard path, reduced-motion respected | automated checks pass; no manual screen-reader pass yet |
 
-Lighthouse CI fails the build when a budget is missed.
+The JavaScript budget was set before choosing the framework and is not reachable on Next.js: the App Router runtime alone is about 170 kB. Its cost shows up as roughly 250 to 350 ms of blocking time while React hydrates, which is what holds performance just under 95 on the larger pages. Lighthouse runs on a machine without a GPU, so it measures the SVG path.
+
+Lighthouse CI (`lighthouserc.json`) fails the build below performance 90, accessibility 100, SEO 100, or over the LCP and CLS budgets.
 
 ## 11. Phases
 
