@@ -1,26 +1,127 @@
 @import "tailwindcss";
 
+/*
+ * Tokens from docs/SPEC.md section 6. An engineering drawing: quiet paper,
+ * hairline rules, and one signal color used only where something is live.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  color-scheme: light dark;
+  --paper: #f3f4f1;
+  --sheet: #fbfcfa;
+  --ink: #14181d;
+  --pencil: #5b6570;
+  --rule: #cdd3cf;
+  --signal: #d9431f;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --paper: #0e1114;
+    --sheet: #151a1f;
+    --ink: #e6e9ec;
+    --pencil: #97a1ac;
+    --rule: #2a323a;
+    --signal: #ff6a3d;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* An explicit choice from the theme toggle wins over the system setting. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #0e1114;
+  --sheet: #151a1f;
+  --ink: #e6e9ec;
+  --pencil: #97a1ac;
+  --rule: #2a323a;
+  --signal: #ff6a3d;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f3f4f1;
+  --sheet: #fbfcfa;
+  --ink: #14181d;
+  --pencil: #5b6570;
+  --rule: #cdd3cf;
+  --signal: #d9431f;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-sheet: var(--sheet);
+  --color-ink: var(--ink);
+  --color-pencil: var(--pencil);
+  --color-rule: var(--rule);
+  --color-signal: var(--signal);
+  --font-sans: var(--font-archivo), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 106.25%; /* 17px body */
+  text-rendering: optimizeLegibility;
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--paper);
+}
+
+/* Display type uses Archivo's width axis, expanded. */
+.display {
+  font-stretch: 112%;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+}
+
+/* Instrument-tag labels. */
+.tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pencil);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.link {
+  border-bottom: 1px solid var(--signal);
+  padding-bottom: 0.1em;
+  font-weight: 500;
+}
+.link:hover {
+  color: var(--signal);
+}
+
+/* The résumé prints as a plain black-on-white document. */
+@media print {
+  :root {
+    --paper: #fff;
+    --sheet: #fff;
+    --ink: #000;
+    --pencil: #333;
+    --rule: #bbb;
+    --signal: #000;
+  }
+  html {
+    font-size: 9pt;
+  }
+  @page {
+    margin: 12mm;
+  }
 }

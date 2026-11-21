@@ -1,69 +1,184 @@
+import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
+import { ContactLinks, JsonLd, Section } from "@/components/chrome";
+import { period, roles } from "@/content/experience";
+import { about, education, proof, site } from "@/content/site";
+import { skillGroups } from "@/content/skills";
+import { alsoBuilt, caseStudies } from "@/content/work";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            { "@type": "WebSite", "@id": `${site.url}/#site`, url: site.url, name: site.name },
+            {
+              "@type": "Person",
+              "@id": `${site.url}/#person`,
+              name: site.name,
+              url: site.url,
+              image: `${site.url}/josh-shearer.webp`,
+              jobTitle: site.role,
+              description: site.description,
+              address: { "@type": "PostalAddress", addressLocality: "Austin", addressRegion: "TX" },
+              alumniOf: education.map((e) => ({ "@type": "CollegeOrUniversity", name: e.school })),
+              sameAs: [site.github, site.linkedin],
+            },
+          ],
+        }}
+      />
+
+      <div className="mx-auto max-w-6xl px-6 pb-20 pt-20 sm:px-10 sm:pb-28 sm:pt-32">
+        <p className="tag">
+          {site.role} / {site.location}
+        </p>
+        <h1 className="display mt-6 text-[clamp(3rem,10vw,7.5rem)]">{site.name}</h1>
+        <p className="mt-8 max-w-[34rem] text-xl leading-snug sm:text-2xl">{site.tagline}</p>
+
+        <ul className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
+          <li>
+            <Link
+              href="/resume"
+              className="inline-block bg-ink px-5 py-3 font-medium text-paper hover:bg-signal"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              Résumé
+            </Link>
+          </li>
+          <li>
+            <a href="#work" className="link">
+              Selected work
+            </a>
+          </li>
+          <li>
+            <a href={site.github} className="link">
+              GitHub
+            </a>
+          </li>
+        </ul>
+
+        <ul className="mt-16 grid max-w-4xl gap-x-10 border-t border-rule sm:grid-cols-2">
+          {proof.map((item, i) => (
+            <li key={item.ledgerId} className="flex gap-4 border-b border-rule py-4">
+              <span className="tag pt-1">{String(i + 1).padStart(2, "0")}</span>
+              <span className="text-pencil">{item.text}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <Section id="work" index="01" label="Selected work">
+        <ol>
+          {caseStudies.map((c) => (
+            <li key={c.slug} className="border-b border-rule first:border-t">
+              <Link href={`/work/${c.slug}`} className="group grid gap-3 py-8 sm:grid-cols-[1fr_auto] sm:gap-10">
+                <div>
+                  <p className="tag">{c.lane}</p>
+                  <h3 className="display mt-3 text-3xl group-hover:text-signal sm:text-5xl">{c.title}</h3>
+                  <p className="mt-4 max-w-[38rem] text-pencil">{c.summary}</p>
+                </div>
+                <p className="tag self-end whitespace-nowrap sm:self-start sm:pt-1">
+                  {c.period} <span aria-hidden="true">→</span>
+                </p>
+              </Link>
+            </li>
+          ))}
+        </ol>
+
+        <h3 className="tag mt-16">Also built</h3>
+        <ul className="mt-4 grid gap-x-10 sm:grid-cols-2">
+          {alsoBuilt.map((p) => (
+            <li key={p.ledgerId} className="border-b border-rule py-5">
+              <p className="font-semibold">
+                {p.href ? (
+                  <a href={p.href} className="link">
+                    {p.name}
+                  </a>
+                ) : (
+                  p.name
+                )}
+              </p>
+              <p className="mt-2 text-sm text-pencil">{p.text}</p>
+            </li>
+          ))}
+        </ul>
+      </Section>
+
+      <Section id="experience" index="02" label="Experience">
+        <ol>
+          {roles.map((r) => (
+            <li
+              key={r.ledgerId}
+              className="grid gap-2 border-b border-rule py-7 first:border-t sm:grid-cols-[8rem_1fr] sm:gap-8"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              <p className="tag pt-1">{period(r)}</p>
+              <div>
+                <h3 className="text-lg font-semibold">
+                  {r.title}, <span className="font-normal">{r.company}</span>
+                </h3>
+                {r.context && <p className="mt-1 text-sm text-pencil">{r.context}</p>}
+                <ul className="mt-3 max-w-[40rem] space-y-2 text-pencil">
+                  {r.claims
+                    .filter((c) => c.featured)
+                    .map((c) => (
+                      <li key={c.ledgerId}>{c.text}</li>
+                    ))}
+                </ul>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      <Section id="capabilities" index="03" label="Capabilities">
+        <dl className="grid gap-x-10 sm:grid-cols-2">
+          {skillGroups.map((g) => (
+            <div key={g.label} className="border-b border-rule py-5">
+              <dt className="font-semibold">{g.label}</dt>
+              <dd className="mt-2">
+                {g.core.length > 0 && <p>{g.core.join(", ")}</p>}
+                {g.working && (
+                  <p className="mt-1 text-sm text-pencil">
+                    {g.core.length > 0 ? "Also: " : ""}
+                    {g.working.join(", ")}
+                  </p>
+                )}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </Section>
+
+      <Section id="about" index="04" label="About">
+        <div className="grid gap-10 md:grid-cols-[1fr_14rem]">
+          <div className="max-w-[40rem] space-y-5 text-lg">
+            {about.map((p) => (
+              <p key={p.ledgerIds.join()}>{p.text}</p>
+            ))}
+            {education.map((e) => (
+              <p key={e.ledgerId} className="tag pt-2">
+                {e.credential} / {e.school} / {e.year}
+              </p>
+            ))}
+          </div>
+          <Image
+            src="/josh-shearer.webp"
+            alt="Josh Shearer"
+            width={480}
+            height={480}
+            className="aspect-square w-40 object-cover grayscale md:w-full"
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </Section>
+
+      <Section id="contact" index="05" label="Contact">
+        <p className="display max-w-[30rem] text-3xl sm:text-5xl">Hiring for a senior role? Get in touch.</p>
+        <ContactLinks className="mt-8 text-lg" />
+      </Section>
+    </>
   );
 }
