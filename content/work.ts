@@ -280,6 +280,24 @@ export const alsoBuilt: { name: string; text: string; ledgerId: string; href?: s
     href: "https://github.com/JoshShearer/Read-Me",
   },
   {
+    name: "OpenDial",
+    ledgerId: "p-od-1",
+    text: "An open-source Linux service for the Microsoft Surface Dial: a radial tool menu, per-app profiles, haptics, a Qt 6 settings app, a CLI and a D-Bus API. C++, in beta.",
+    href: "https://github.com/JoshShearer/opendial",
+  },
+  {
+    name: "3DMouse Linux",
+    ledgerId: "p-3dm-1",
+    text: "An open-source Linux driver and settings app for 3Dconnexion 6-DOF devices, compatible with existing spacenavd / libspnav applications, with automatic per-app profiles. Rust, in alpha.",
+    href: "https://github.com/JoshShearer/3dmouse-linux",
+  },
+  {
+    name: "Fractile",
+    ledgerId: "p-fr-1",
+    text: "Open-source grid window placement for Linux, in the style of Divvy, that also saves workspace snapshots and restores windows at login. Rust.",
+    href: "https://github.com/JoshShearer/fractile",
+  },
+  {
     name: "Venture Lab",
     ledgerId: "p-vl-1",
     text: "A React and Hono app that tags every claim with an evidence type and strength, so AI-generated hypotheses are never presented as market evidence.",
