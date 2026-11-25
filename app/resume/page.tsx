@@ -20,7 +20,7 @@ export default function ResumePage() {
   const projects = caseStudies.filter((c) => c.ledgerId.startsWith("proj-"));
   const openSource = alsoBuilt.filter((p) => p.resume);
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16 sm:px-10 print:max-w-none print:p-0">
+    <div id="resume" className="mx-auto max-w-3xl px-6 py-16 sm:px-10 print:max-w-none print:p-0">
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div>
           <h1 className="display text-4xl sm:text-5xl print:text-3xl">{site.name}</h1>
